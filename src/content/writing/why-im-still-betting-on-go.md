@@ -3,12 +3,12 @@ title: Why I'm still betting on Go for backend services in 2026
 date: 2026-04-12
 edited: 2026-04-15
 tags: [go, backend, opinion]
-excerpt: Five years ago I would have written this in Kotlin. Three years ago, Rust. Today I keep reaching for Go for the same reason I reach for a Phillips screwdriver, it is rarely the most exciting tool in the drawer, and it is almost always the right one.
+excerpt: Five years ago I would have written this in Java or .NET. Three years ago, Rust. Today I keep reaching for Go for the same reason I reach for a Phillips screwdriver, it is rarely the most exciting tool in the drawer, and it is almost always the right one.
 draft: false
 location: Christchurch, NZ
 ---
 
-Five years ago I would have written this in Kotlin. Three years ago, Rust. Today I keep reaching for Go for the same reason I reach for a Phillips screwdriver: it is rarely the most exciting tool in the drawer, and it is almost always the right one.
+Five years ago I would have written this in Java or .NET. Three years ago, Rust. Today I keep reaching for Go for the same reason I reach for a Phillips screwdriver: it is rarely the most exciting tool in the drawer, and it is almost always the right one.
 
 The argument I want to make is small. It is not that Go is the best language. It is not that you should rewrite your services. It is that, if I had to start a new backend in May 2026, with a team of four to six people, a five-year horizon, and a real on-call rotation, I would still pick Go. And I want to write down why so that the next time I get into a pub argument about it I can just send a link.
 

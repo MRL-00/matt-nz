@@ -52,6 +52,16 @@ body {
   min-height: 100vh;
 }
 
+/* ---------- Text selection ---------- */
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+::-moz-selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+
 /* ---------- Utility classes ---------- */
 .text-dim   { color: var(--text-dim); }
 .text-muted { color: var(--muted); }

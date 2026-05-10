@@ -8,7 +8,7 @@ export const site = {
     'Matt List — Solution Architect & Engineering Lead based in Christchurch, NZ. Notes on backends, mobile, and shipping software.',
   author: 'Matt List',
   ogImage: '/og.png',
-  coordinate: '42.4°S',
+  coordinate: '43.53°S',
   version: 'v0.4.1',
   lastDeploy: '2026-05-08',
 };

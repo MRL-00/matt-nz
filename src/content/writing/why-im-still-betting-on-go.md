@@ -7,25 +7,32 @@ excerpt: Five years ago I would have written this in Java or .NET. Three years a
 draft: false
 location: Christchurch, NZ
 ---
+Ten years ago I would have written this in Java. Three to five years, .NET. Today I keep reaching for Go for the same reason I reach for a Phillips screwdriver: it is rarely the most exciting tool in the drawer, and it is almost always the right one.
 
-Five years ago I would have written this in Java or .NET. Three years ago, Rust. Today I keep reaching for Go for the same reason I reach for a Phillips screwdriver: it is rarely the most exciting tool in the drawer, and it is almost always the right one.
+The argument I want to make is small. It is not that Go is the best language. It is not that you should rewrite your services. It is that, if I had to start a new backend in May 2026, with a team of three to six people, and a five-year horizon, I would still pick Go. And I want to write down why so that the next time I get into a pub argument about it I can just send a link.
 
-The argument I want to make is small. It is not that Go is the best language. It is not that you should rewrite your services. It is that, if I had to start a new backend in May 2026, with a team of four to six people, a five-year horizon, and a real on-call rotation, I would still pick Go. And I want to write down why so that the next time I get into a pub argument about it I can just send a link.
+I should also say where this is coming from. We have spent the last stretch at AJ Hackett collapsing three separate .NET APIs that ran on the edge device at each jump site into one Go binary. Same hardware, same network, same humans on the bridge in the rain. A lot of the opinions below are paid for by that migration.
 
 ## A boring tool for a boring job
 
-Most backend services are not interesting. They take a request, validate it, do something to a database, talk to two or three other services, and write a response. The hard parts are almost never the language. The hard parts are the data model, the boundaries between services, the failure modes, and the people you work with.
+Most backend services are not interesting. They take a request, validate it, do something to a database, talk to two or three other services, and write a response. The hard parts are almost never the language. The hard parts are the data model, the boundaries between services, the failure modes, and the ~~people~~ environments you work with.
 
-Go is an exceptionally boring language for this job. The standard library is large and stable. The toolchain is one binary. `go build` produces a single artifact you can `scp` to a box if you have to. There is exactly one obvious way to format the code, and it is not your way. You will get over this.
+Go is an exceptionally boring language for this job. The standard library is large and stable. The toolchain is one binary. `go build` produces a single artifact you can `scp` to a box if you have to. There is exactly one way to format the code, `gofmt` decides what it is, and you do not get a vote. You will get over this.
+
+The single-artifact thing is not a small detail when production lives on a fan-cooled Linux box at a jump site and the deploy window is the gap between groups. The old shape was three .NET services — three runtimes, three sets of logs, three things to restart in the right order when something got stuck, all running in Azure IoT (don't get me started). The new shape is one Go binary in one container. `docker pull`, restart, done. The deploy is incredibly fast, and you are back on the platform before the next one is harnessed up.
+
+The pipeline does the boring parts. CI builds the image and pushes it to GCR on every merge. Deploying to a site is one line from a laptop:
 
 ```sh
-# the entire build pipeline, more or less
-$ go test ./...
-$ go build -o bin/api ./cmd/api
-$ docker build -t api:$(git rev-parse --short HEAD) .
+$ ./scripts/setup.sh \
+    --ip 0.0.0.0 \
+    --name TestMachine \
+    --user edge-user \
+    --env-file environments/local.env \
+    --version 0.2.4
 ```
 
-I have been on call for systems written in Scala, Node, .NET, and Go. The Go ones are not the most fun to work in. They are, by a comfortable margin, the easiest to debug at 2 a.m. with a bad signal at the bach.
+That is the whole interface. Pick a box, pick a version, run it. There is no out-of-band config, no "did you remember to update IIS," no sequence of services that need to come up in a particular order. And because it is Go, the same code runs on whatever happens to be at the site — x86, ARM, older boxes, newer boxes, the one we have not bought yet.
 
 ## What I actually mean by "backend"
 
@@ -33,11 +40,9 @@ I want to be specific, because "backend" can mean a lot of different things and 
 
 - HTTP and gRPC services that own a database, fronted by a load balancer.
 - Long-running workers that drain a queue and call out to other services.
-- The glue layer between your product and the four SaaS vendors you wish you didn't need.
+- The thing on the edge device at the jump site that talks to the hardware, the camera, the payment terminal, and HQ, and has to keep working when head office can't be reached.
+- The glue layer between your product and your customers.
 
-For all three, Go does the thing. For data pipelines I would still reach for Python or Spark. For anything that is genuinely CPU-bound and latency-critical, Rust is now the obvious choice and it is not close. For mobile clients, please don't.
-
-> The best backend language is the one your on-call engineer can read at 2 a.m. without coffee. Almost everything else is taste.
 
 ## The cost of a smaller language
 

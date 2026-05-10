@@ -1,4 +1,14 @@
 // Site-wide constants and identity-card data. Edit here, not in templates.
+import { execSync } from 'node:child_process';
+
+function lastCommitDate(): string {
+  try {
+    return execSync('git log -1 --format=%cs', { encoding: 'utf8' }).trim();
+  } catch {
+    return new Date().toISOString().slice(0, 10);
+  }
+}
+
 export const site = {
   url: 'https://matt-nz.com',
   title: 'Matt List',
@@ -10,7 +20,7 @@ export const site = {
   ogImage: '/og.png',
   coordinate: '42.4°S',
   version: 'v0.4.1',
-  lastDeploy: '2026-05-08',
+  lastDeploy: lastCommitDate(),
 };
 
 export const identity = {

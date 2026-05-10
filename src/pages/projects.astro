@@ -1,0 +1,159 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { statusGlyph, site } from '../site';
+
+const all = await getCollection('projects');
+
+// Sort: explicit order first, then year desc
+const projects = all.sort((a, b) => {
+  const ao = a.data.order ?? 999;
+  const bo = b.data.order ?? 999;
+  if (ao !== bo) return ao - bo;
+  return b.data.year - a.data.year;
+});
+
+// Tag counts for sidebar
+const tagCounts = new Map<string, number>();
+for (const p of projects) {
+  for (const t of p.data.tech) tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
+}
+const tags = Array.from(tagCounts.entries())
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 12);
+---
+<BaseLayout title="Projects" current="projects" description="Side projects, libraries, and a few things that quietly turned into products.">
+  <div class="grid grid-cols-12 gap-14 mt-16 grid-main">
+    <aside class="col-span-4">
+      <div class="id-card">
+        <div class="text-muted uppercase mb-4" style="font-size: 11px; letter-spacing: 0.18em;">~/ projects</div>
+        <p style="color: var(--text-dim); line-height: 1.65; max-width: 32ch;">
+          Side projects, libraries, and a few things that quietly turned into products.
+          Newest at the top.
+        </p>
+
+        <div class="text-muted uppercase mb-4 mt-8" style="font-size: 11px; letter-spacing: 0.18em;">~/ filter</div>
+        <div id="tag-filter" style="font-size: 13px; line-height: 1.9;">
+          <a href="/projects" class="lk filter-link" data-tag="" style="color: var(--text);">all <span class="text-muted tnum">· {projects.length}</span></a><br/>
+          {tags.map(([t, n]) => (
+            <>
+              <a href={`/projects?tag=${encodeURIComponent(t)}`} class="lk filter-link text-dim" data-tag={t}>{t} <span class="text-muted tnum">· {n}</span></a><br/>
+            </>
+          ))}
+        </div>
+
+        <div class="text-muted uppercase mb-4 mt-10" style="font-size: 11px; letter-spacing: 0.18em;">~/ legend</div>
+        <div class="text-dim" style="font-size: 12px; line-height: 1.85;">
+          <span class="text-accent">●</span>&nbsp; actively maintained<br/>
+          <span class="text-muted">○</span>&nbsp; stable, not changing much<br/>
+          <span class="text-muted">×</span>&nbsp; archived
+        </div>
+      </div>
+    </aside>
+
+    <section class="col-span-8">
+      <div class="flex items-baseline justify-between mb-2">
+        <h1 class="h-marker font-semibold" style="font-size: 24px; letter-spacing: -0.02em;">projects</h1>
+        <span class="text-muted tnum" style="font-size: 12px;" id="proj-count">{projects.length} entries · sorted: newest first</span>
+      </div>
+      <div class="ascii-rule">────────────────────────────────────────────────────────────────────</div>
+
+      <div id="proj-list" class="mt-2">
+        {projects.map((p, i) => (
+          <article class="proj-row" data-tags={p.data.tech.join(' ')}>
+            <span class="idx tnum">{String(i + 1).padStart(2, '0')}</span>
+            <div>
+              <div class="flex items-baseline gap-3 flex-wrap">
+                <h3>
+                  {p.data.url
+                    ? <a href={p.data.url} class="lk-u">{p.data.title}</a>
+                    : <span>{p.data.title}</span>}
+                </h3>
+                <span class={p.data.status === 'active' ? 'text-accent' : 'text-muted'} style="font-size: 12px;">{statusGlyph(p.data.status)}</span>
+                {p.data.version && <span class="text-muted" style="font-size: 12px;">{p.data.version}</span>}
+              </div>
+              <p class="blurb">{p.data.blurb}</p>
+              <div class="tags">
+                {p.data.tech.map(t => <span class="tag">{t}</span>)}
+              </div>
+            </div>
+            <div class="meta tnum">
+              {p.data.year}{p.data.ongoing ? ' · ongoing' : ''}<br/>
+              {p.data.url
+                ? <a href={p.data.url} class="lk-u" style="font-size: 12px;">{p.data.linkLabel ?? 'link'} →</a>
+                : <span class="text-muted" style="font-size: 12px;">{p.data.linkLabel ?? ''}</span>}
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <p id="proj-empty" class="mt-8 text-muted" style="font-size: 13px; display: none;">
+        No projects match this filter. <a href="/projects" class="lk-u">show all →</a>
+      </p>
+
+      <div class="page-spec mt-16 tnum">
+        <span>{site.url.replace('https://', '')} / projects</span>
+        <span id="proj-showing">showing all {projects.length}</span>
+      </div>
+    </section>
+  </div>
+
+  <script is:inline>
+    (function () {
+      var list = document.getElementById('proj-list');
+      if (!list) return;
+      var rows = list.querySelectorAll('.proj-row');
+      var emptyMsg = document.getElementById('proj-empty');
+      var showing = document.getElementById('proj-showing');
+      var links = document.querySelectorAll('.filter-link');
+
+      function apply(tag) {
+        var visible = 0;
+        rows.forEach(function (r) {
+          var tags = (r.getAttribute('data-tags') || '').split(' ');
+          var match = !tag || tags.indexOf(tag) !== -1;
+          r.classList.toggle('is-hidden', !match);
+          if (match) {
+            visible++;
+            var idxEl = r.querySelector('.idx');
+            if (idxEl) idxEl.textContent = String(visible).padStart(2, '0');
+          }
+        });
+        if (emptyMsg) emptyMsg.style.display = visible === 0 ? '' : 'none';
+        if (showing) {
+          showing.textContent = tag
+            ? 'showing ' + visible + ' tagged [' + tag + ']'
+            : 'showing all ' + rows.length;
+        }
+        links.forEach(function (a) {
+          var t = a.getAttribute('data-tag') || '';
+          var active = t === (tag || '');
+          a.classList.toggle('text-dim', !active);
+          a.style.color = active ? 'var(--text)' : '';
+        });
+      }
+
+      function readTag() {
+        try {
+          var u = new URL(window.location.href);
+          return u.searchParams.get('tag') || '';
+        } catch (_) { return ''; }
+      }
+
+      apply(readTag());
+
+      links.forEach(function (a) {
+        a.addEventListener('click', function (e) {
+          if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+          e.preventDefault();
+          var t = a.getAttribute('data-tag') || '';
+          var url = t ? '/projects?tag=' + encodeURIComponent(t) : '/projects';
+          history.pushState({}, '', url);
+          apply(t);
+        });
+      });
+
+      window.addEventListener('popstate', function () { apply(readTag()); });
+    })();
+  </script>
+</BaseLayout>

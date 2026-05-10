@@ -1,0 +1,94 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { site } from '../../site';
+import { readingStats } from '../../lib/reading';
+
+const posts = (await getCollection('writing', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+const yearCounts = new Map<number, number>();
+for (const p of posts) {
+  const y = p.data.date.getFullYear();
+  yearCounts.set(y, (yearCounts.get(y) ?? 0) + 1);
+}
+const years = Array.from(yearCounts.entries()).sort((a, b) => b[0] - a[0]);
+
+const range = posts.length
+  ? `${posts.at(-1)!.data.date.getFullYear()}—${posts[0].data.date.getFullYear()}`
+  : '';
+
+function fmtDate(d: Date) {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+---
+<BaseLayout title="Writing" current="writing" description="Notes on backends, mobile, and the politics of getting software out the door.">
+  <div class="grid grid-cols-12 gap-14 mt-16 grid-main">
+    <aside class="col-span-4">
+      <div class="id-card">
+        <div class="text-muted uppercase mb-4" style="font-size: 11px; letter-spacing: 0.18em;">~/ writing</div>
+        <p style="color: var(--text-dim); line-height: 1.65; max-width: 32ch;">
+          Notes, mostly about distributed systems, mobile, and the politics of getting software out the door.
+        </p>
+        <p class="mt-4" style="color: var(--text-dim); line-height: 1.65; max-width: 32ch;">
+          I average four posts a year. They tend to be long.
+        </p>
+
+        <div class="text-muted uppercase mb-4 mt-10" style="font-size: 11px; letter-spacing: 0.18em;">~/ archive</div>
+        <div class="tnum" style="font-size: 13px; line-height: 1.9;">
+          {years.map(([y, n], i) => (
+            <>
+              <a href={`#year-${y}`} class={`lk ${i === 0 ? '' : 'text-dim'}`} style={i === 0 ? 'color: var(--text);' : ''}>{y} <span class="text-muted">· {n}</span></a><br/>
+            </>
+          ))}
+        </div>
+
+        <div class="text-muted uppercase mb-4 mt-10" style="font-size: 11px; letter-spacing: 0.18em;">~/ subscribe</div>
+        <p style="font-size: 13px; color: var(--text-dim); max-width: 30ch; line-height: 1.6;">
+          No newsletter. I push posts to RSS and that&rsquo;s about it.
+        </p>
+        <a href="/feed.xml" class="lk-u inline-block mt-3" style="font-size: 13px;">/feed.xml →</a>
+      </div>
+    </aside>
+
+    <section class="col-span-8">
+      <div class="flex items-baseline justify-between mb-2">
+        <h1 class="h-marker font-semibold" style="font-size: 24px; letter-spacing: -0.02em;">writing</h1>
+        <span class="text-muted tnum" style="font-size: 12px;">{posts.length} posts · {range}</span>
+      </div>
+      <div class="ascii-rule">────────────────────────────────────────────────────────────────────</div>
+
+      <div class="mt-2">
+        {posts.map((p, i) => {
+          const stats = readingStats(p.body ?? '');
+          const year = p.data.date.getFullYear();
+          return (
+            <article class="post-row" id={i === 0 ? `year-${year}` : undefined}>
+              <span class="idx tnum">{String(i + 1).padStart(2, '0')}</span>
+              <span class="date tnum">{fmtDate(p.data.date)}</span>
+              <div>
+                <h3><a href={`/writing/${p.id}`} class="lk-u">{p.data.title}</a></h3>
+                <p class="excerpt">{p.data.excerpt}</p>
+                <div class="meta-row tnum">
+                  <span>{stats.minutes} min read</span>
+                  {p.data.tags.flatMap(t => [
+                    <span class="text-muted">·</span>,
+                    <span>{t}</span>,
+                  ])}
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      <div class="page-spec mt-16 tnum">
+        <span>{site.url.replace('https://', '')} / writing</span>
+        <span>{posts.length} posts</span>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

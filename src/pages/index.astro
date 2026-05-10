@@ -1,0 +1,90 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import IdentityCard from '../components/IdentityCard.astro';
+import { site, statusGlyph } from '../site';
+
+const all = await getCollection('projects');
+// Selected work: top 3 by manual order, fall back to year desc
+const selected = all
+  .filter(p => p.data.status !== 'archived')
+  .sort((a, b) => {
+    const ao = a.data.order ?? 999;
+    const bo = b.data.order ?? 999;
+    if (ao !== bo) return ao - bo;
+    return b.data.year - a.data.year;
+  })
+  .slice(0, 3);
+
+const nowMonth = '2026.05';
+---
+<BaseLayout current="about">
+  <div class="grid grid-cols-12 gap-14 mt-16 grid-main">
+    <aside class="col-span-4">
+      <IdentityCard />
+    </aside>
+
+    <section class="col-span-8">
+      <div class="text-muted uppercase mb-5" style="font-size: 11px; letter-spacing: 0.18em;">~/ about</div>
+
+      <h1 class="font-semibold" style="font-size: 34px; line-height: 1.15; letter-spacing: -0.02em; max-width: 26ch;">
+        I design and ship the load-bearing parts of software systems &mdash; <span class="text-muted">backends, websites, mobile apps, the bits between teams.</span>
+      </h1>
+
+      <div class="mt-10 space-y-5" style="font-size: 15px; line-height: 1.7; color: var(--text-dim); max-width: 74ch;">
+        <p>Fifteen-ish years in. Started with Java and Eclipse and swiftly moved to .NET, drifted into mobile (Swift, Flutter), spent the last few years writing a lot of Go and TypeScript and trying to keep teams pointed in roughly the same direction.</p>
+        <p>Currently leading engineering at AJ Hackett Bungy. These days a lot of my work is AI-shaped: building agents, wiring up MCP servers, figuring out where this stuff actually earns its keep versus where it's just noise. The rest is the usual — architecture, code review, repeat.</p>
+        <p>A small corner of the internet for things I've built, things I'm thinking about, and things I'll probably change my mind on later. It&rsquo;s plain on purpose.</p>
+      </div>
+
+      <div class="mt-14">
+        <div class="text-muted uppercase mb-4" style="font-size: 11px; letter-spacing: 0.18em;">
+          ~/ now <span class="text-muted ml-2 tnum">— {nowMonth}</span>
+        </div>
+        <ul style="font-size: 14px; line-height: 1.7; color: var(--text-dim);">
+          <li class="flex gap-4"><span class="text-muted">→</span><span>Quietly looking. Staff / Principal / Architect roles, NZ remote or AU-friendly hours.</span></li>
+          <li class="flex gap-4"><span class="text-muted">→</span><span>Reading <em>Designing Data-Intensive Applications</em> for the third time. Still learning things.</span></li>
+          <li class="flex gap-4"><span class="text-muted">→</span><span>Slowly porting an old Flutter side project to native SwiftUI.</span></li>
+        </ul>
+      </div>
+
+      <div class="mt-14">
+        <div class="flex items-baseline justify-between mb-4">
+          <div class="text-muted uppercase" style="font-size: 11px; letter-spacing: 0.18em;">~/ selected work</div>
+          <a href="/projects" class="lk" style="font-size: 12px;">view all →</a>
+        </div>
+        <div>
+          {selected.map((p, i) => (
+            <div class="proj-row" style="grid-template-columns: 28px 1fr 140px;">
+              <span class="idx tnum">{String(i + 1).padStart(2, '0')}</span>
+              <div>
+                <h3>
+                  {p.data.url
+                    ? <a href={p.data.url} class="lk">{p.data.title}</a>
+                    : <span>{p.data.title}</span>}
+                  {p.data.status === 'active' && <span class="text-accent ml-2" style="font-size: 12px;">{statusGlyph(p.data.status)}</span>}
+                </h3>
+                <p class="blurb">{p.data.blurb}</p>
+              </div>
+              <span class="meta tnum">{p.data.tech[0]} · {p.data.year}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div id="contact" class="mt-14">
+        <div class="text-muted uppercase mb-4" style="font-size: 11px; letter-spacing: 0.18em;">~/ contact</div>
+        <p style="font-size: 14px; line-height: 1.7; color: var(--text-dim); max-width: 74ch;">
+          DMs open on <a href="https://x.com/nzmrldev" class="lk-u">x / @nzmrldev</a>, or reach out on
+          <a href="https://www.linkedin.com/in/mrlist/" class="lk-u">linkedin / in/mrlist</a>.
+        </p>
+      </div>
+
+      <div class="page-spec mt-20 tnum">
+        <span>{site.url.replace('https://', '')}</span>
+        <span>{site.version}</span>
+        <span class="ml-auto">— last deploy {site.lastDeploy}</span>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

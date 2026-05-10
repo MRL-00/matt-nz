@@ -1,0 +1,20 @@
+---
+import { identity, links } from '../site';
+---
+<div class="id-card">
+  <div class="text-muted uppercase mb-4" style="font-size: 11px; letter-spacing: 0.18em;">~/ identity</div>
+  <div class="row"><span class="k">name</span><span class="v">{identity.name}</span></div>
+  <div class="row"><span class="k">role</span><span class="v"><Fragment set:html={identity.role} /></span></div>
+  <div class="row"><span class="k">based</span><span class="v">{identity.based}</span></div>
+  <div class="row"><span class="k">since</span><span class="v tnum">{identity.since}</span></div>
+  <div class="row"><span class="k">stack</span><span class="v">{identity.stack}</span></div>
+  <div class="row"><span class="k">status</span><span class="v"><span class="text-accent">●</span> {identity.status}</span></div>
+
+  <div class="text-muted uppercase mb-4 mt-10" style="font-size: 11px; letter-spacing: 0.18em;">~/ links</div>
+  {links.map(l => (
+    <div class="row">
+      <span class="k">{l.k}</span>
+      <span class="v"><a href={l.href} class="lk-u">{l.v}</a></span>
+    </div>
+  ))}
+</div>

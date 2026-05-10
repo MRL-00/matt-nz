@@ -44,7 +44,20 @@ const svg = `<?xml version="1.0" encoding="UTF-8"?>
   <text x="${W - 64}" y="580" fill="${accent}" font-family="JetBrains Mono, ui-monospace, monospace" font-size="22" text-anchor="end">● writing &amp; shipping</text>
 </svg>`;
 
-const resvg = new Resvg(svg, { background: bg, fitTo: { mode: 'width', value: W } });
+const fontsDir = resolve(__dirname, 'fonts');
+
+const resvg = new Resvg(svg, {
+  background: bg,
+  fitTo: { mode: 'width', value: W },
+  font: {
+    loadSystemFonts: false,
+    fontFiles: [
+      resolve(fontsDir, 'JetBrainsMono-Regular.ttf'),
+      resolve(fontsDir, 'JetBrainsMono-SemiBold.ttf'),
+    ],
+    defaultFontFamily: 'JetBrains Mono',
+  },
+});
 const png = resvg.render().asPng();
 
 mkdirSync(dirname(out), { recursive: true });

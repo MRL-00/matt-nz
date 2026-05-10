@@ -63,6 +63,14 @@ const ogUrl = new URL(ogImage, site.url).toString();
   <link rel="alternate" type="application/rss+xml" title={`${site.title} — writing`} href="/feed.xml" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
+  <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-3GJLQJ2L2F"></script>
+  <script is:inline>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-3GJLQJ2L2F');
+  </script>
+
   <script is:inline>
     // No-FOUC theme bootstrap. Runs synchronously before first paint.
     // Dark wins on first visit unless the OS prefers light.

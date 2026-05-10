@@ -25,7 +25,7 @@
   --muted:     #6c6961;
   --border:    #232227;
   --hairline:  #1a191d;
-  --accent:    #d08a5c; /* muted clay */
+  --accent:    #9caa6a; /* muted olive */
 }
 
 [data-theme='light'] {
@@ -36,7 +36,7 @@
   --muted:     #82806a;
   --border:    #dcd7ce;
   --hairline:  #ebe7df;
-  --accent:    #a8552a;
+  --accent:    #5d6b35;
 }
 
 /* ---------- Base ---------- */

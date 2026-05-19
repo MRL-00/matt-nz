@@ -97,11 +97,11 @@ const ogUrl = new URL(ogImage, site.url).toString();
       <a href="/" class="lk" style="color: var(--text); font-weight: 600; font-size: 14px;">
         {site.shortTitle} <span class="text-muted" style="font-weight: 400;">/ {site.initials}</span>
       </a>
-      <div class="flex items-center gap-7">
+      <div class="nav-links flex items-center gap-7">
         {navItems.map(item => (
           <a href={item.href} class={current === item.key ? 'current' : 'lk'}>{item.label}</a>
         ))}
-        <span class="text-muted ml-2 tnum" style="font-size: 12px;">{site.coordinate}</span>
+        <span class="site-coordinate text-muted ml-2 tnum" style="font-size: 12px;">{site.coordinate}</span>
         <button
           id="theme-toggle"
           type="button"

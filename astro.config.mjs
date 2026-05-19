@@ -1,5 +1,4 @@
 import { defineConfig } from 'astro/config';
-import tailwind from '@astrojs/tailwind';
 
 export default defineConfig({
   site: 'https://matt-nz.com',
@@ -9,9 +8,6 @@ export default defineConfig({
     format: 'file',
     inlineStylesheets: 'auto',
   },
-  integrations: [
-    tailwind({ applyBaseStyles: false }),
-  ],
   markdown: {
     shikiConfig: {
       themes: {

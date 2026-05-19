@@ -1,5 +1,6 @@
-import { defineCollection, z } from 'astro:content';
+import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
+import { z } from 'astro/zod';
 
 const projects = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/projects' }),
@@ -9,7 +10,7 @@ const projects = defineCollection({
     year: z.number().int(),
     ongoing: z.boolean().default(false),
     tech: z.array(z.string()).default([]),
-    url: z.string().url().optional(),
+    url: z.url().optional(),
     linkLabel: z.string().optional(),
     blurb: z.string(),
     version: z.string().optional(),

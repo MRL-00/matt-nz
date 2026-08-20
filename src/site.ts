@@ -34,7 +34,7 @@ export const identity = {
 
 export const links = [
   { k: 'github',   v: '@MRL-00',         href: 'https://github.com/MRL-00' },
-  { k: 'x',        v: '@nzmrldev',           href: 'https://x.com/nzmrldev' },
+  { k: 'x',        v: '@codermatt',          href: 'https://x.com/codermatt' },
   { k: 'linkedin', v: 'in/mrlist',       href: 'https://www.linkedin.com/in/mrlist/' },
   { k: 'rss',      v: '/feed.xml',         href: '/feed.xml' },
 ];

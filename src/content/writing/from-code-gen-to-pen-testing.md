@@ -1,8 +1,8 @@
 ---
-title: From code-gen to pen testing: what happened when we pointed an LLM at our dev environment
+title: "From code-gen to pen testing: what happened when we pointed an LLM at our dev environment"
 date: 2026-08-20
 tags: [ai, security, llm]
-excerpt: An external audit gave us a relatively clean bill of health. Out of curiosity I pointed an uncensored model at our staging environment anyway, effectively saying "hack my own software." It found things we'd missed.
+excerpt: "An external audit gave us a relatively clean bill of health. Out of curiosity I pointed an uncensored model at our staging environment anyway, effectively saying \"hack my own software.\" It found things we'd missed."
 draft: false
 location: Christchurch, NZ
 ---

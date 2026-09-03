@@ -1,94 +1,79 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { site } from '../../site';
 import { readingStats } from '../../lib/reading';
 
 const posts = (await getCollection('writing', ({ data }) => !data.draft))
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 
-const yearCounts = new Map<number, number>();
-for (const p of posts) {
-  const y = p.data.date.getFullYear();
-  yearCounts.set(y, (yearCounts.get(y) ?? 0) + 1);
-}
-const years = Array.from(yearCounts.entries()).sort((a, b) => b[0] - a[0]);
-
-const range = posts.length
-  ? `${posts.at(-1)!.data.date.getFullYear()}—${posts[0].data.date.getFullYear()}`
-  : '';
-
 function fmtDate(d: Date) {
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`;
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 ---
 <BaseLayout title="Writing" current="writing" description="Notes on backends, mobile, and the politics of getting software out the door.">
-  <div class="grid grid-cols-12 gap-14 mt-16 grid-main">
-    <aside class="col-span-4">
-      <div class="id-card">
-        <div class="text-muted uppercase mb-4" style="font-size: 11px; letter-spacing: 0.18em;">~/ writing</div>
-        <p style="color: var(--text-dim); line-height: 1.65; max-width: 32ch;">
-          Notes, mostly about distributed systems, mobile, and the politics of getting software out the door.
-        </p>
-        <p class="mt-4" style="color: var(--text-dim); line-height: 1.65; max-width: 32ch;">
-          I average four posts a year. They tend to be long.
-        </p>
-
-        <div class="text-muted uppercase mb-4 mt-10" style="font-size: 11px; letter-spacing: 0.18em;">~/ archive</div>
-        <div class="tnum" style="font-size: 13px; line-height: 1.9;">
-          {years.map(([y, n], i) => (
-            <>
-              <a href={`#year-${y}`} class={`lk ${i === 0 ? '' : 'text-dim'}`} style={i === 0 ? 'color: var(--text);' : ''}>{y} <span class="text-muted">· {n}</span></a><br/>
-            </>
-          ))}
-        </div>
-
-        <div class="text-muted uppercase mb-4 mt-10" style="font-size: 11px; letter-spacing: 0.18em;">~/ subscribe</div>
-        <p style="font-size: 13px; color: var(--text-dim); max-width: 30ch; line-height: 1.6;">
-          No newsletter. I push posts to RSS and that&rsquo;s about it.
-        </p>
-        <a href="/feed.xml" class="lk-u inline-block mt-3" style="font-size: 13px;">/feed.xml →</a>
+  <div class="space-y-12">
+    <!-- Header -->
+    <header class="pt-4">
+      <div class="font-mono text-[12px] uppercase tracking-wider text-muted mb-2">Essay Collection</div>
+      <h1 class="font-serif text-[38px] sm:text-[42px] leading-[1.2] font-medium tracking-tight text-[var(--text)]">
+        Writing
+      </h1>
+      <p class="font-serif text-[18px] sm:text-[19px] leading-[1.65] text-dim mt-4 max-w-[62ch]">
+        Long-form thoughts on distributed systems, mobile development, agent harnesses, and the hard human parts of delivering software.
+      </p>
+      <div class="flex items-center gap-4 mt-6 text-[13px] font-sans text-muted">
+        <span>{posts.length} {posts.length === 1 ? 'essay' : 'essays'} published</span>
+        <span>&middot;</span>
+        <a href="/feed.xml" class="text-dim hover:text-accent flex items-center gap-1.5 transition-colors">
+          Subscribe via RSS &rarr;
+        </a>
       </div>
-    </aside>
+    </header>
 
-    <section class="col-span-8">
-      <div class="flex items-baseline justify-between mb-2">
-        <h1 class="h-marker font-semibold" style="font-size: 24px; letter-spacing: -0.02em;">writing</h1>
-        <span class="text-muted tnum" style="font-size: 12px;">{posts.length} posts · {range}</span>
-      </div>
-      <div class="ascii-rule">────────────────────────────────────────────────────────────────────</div>
-
-      <div class="mt-2">
-        {posts.map((p, i) => {
-          const stats = readingStats(p.body ?? '');
-          const year = p.data.date.getFullYear();
-          return (
-            <article class="post-row" id={i === 0 ? `year-${year}` : undefined}>
-              <span class="idx tnum">{String(i + 1).padStart(2, '0')}</span>
-              <span class="date tnum">{fmtDate(p.data.date)}</span>
-              <div>
-                <h3><a href={`/writing/${p.id}`} class="lk-u">{p.data.title}</a></h3>
-                <p class="excerpt">{p.data.excerpt}</p>
-                <div class="meta-row tnum">
-                  <span>{stats.minutes} min read</span>
-                  {p.data.tags.flatMap(t => [
-                    <span class="text-muted">·</span>,
-                    <span>{t}</span>,
-                  ])}
-                </div>
+    <!-- Articles List -->
+    <div class="border-t bd pt-10 space-y-10">
+      {posts.map((p) => {
+        const stats = readingStats(p.body ?? '');
+        return (
+          <article class="group block p-7 sm:p-8 bg-card border bd rounded-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--accent)] shadow-sm">
+            <a href={`/writing/${p.id}`} class="block">
+              <div class="flex items-center gap-2.5 font-mono text-[12px] text-muted mb-3">
+                <span>{fmtDate(p.data.date)}</span>
+                <span>&middot;</span>
+                <span>{stats.minutes} min read</span>
+                {p.data.location && (
+                  <>
+                    <span>&middot;</span>
+                    <span>{p.data.location}</span>
+                  </>
+                )}
               </div>
-            </article>
-          );
-        })}
-      </div>
+              <h2 class="font-serif text-[26px] sm:text-[28px] font-medium leading-[1.25] text-[var(--text)] group-hover:text-accent transition-colors mb-3">
+                {p.data.title}
+              </h2>
+              <p class="font-serif text-[16px] sm:text-[17px] leading-[1.7] text-dim mb-5 max-w-[70ch]">
+                {p.data.excerpt}
+              </p>
+            </a>
+            <div class="flex items-center justify-between pt-4 border-t border-[var(--hairline)] flex-wrap gap-3">
+              <div class="flex items-center gap-2 flex-wrap">
+                {p.data.tags.map(t => (
+                  <span class="tag">{t}</span>
+                ))}
+              </div>
+              <a href={`/writing/${p.id}`} class="font-sans text-[13px] font-medium text-accent inline-flex items-center gap-1">
+                Read essay &rarr;
+              </a>
+            </div>
+          </article>
+        );
+      })}
+    </div>
 
-      <div class="page-spec mt-16 tnum">
-        <span>{site.url.replace('https://', '')} / writing</span>
-        <span>{posts.length} posts</span>
-      </div>
-    </section>
+    <!-- Footer note -->
+    <footer class="pt-8 border-t border-[var(--hairline)] flex justify-between items-center text-[13px] font-sans text-muted">
+      <span>matt-nz.com &middot; writing</span>
+      <a href="/" class="hover:text-accent transition-colors">&larr; back to home</a>
+    </footer>
   </div>
 </BaseLayout>

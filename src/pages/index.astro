@@ -1,12 +1,11 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import IdentityCard from '../components/IdentityCard.astro';
-import { site, statusGlyph } from '../site';
+import { statusGlyph } from '../site';
+import { readingStats } from '../lib/reading';
 
-const all = await getCollection('projects');
-// Selected work: top 3 by manual order, fall back to year desc
-const selected = all
+const allProjects = await getCollection('projects');
+const selectedProjects = allProjects
   .filter(p => p.data.status !== 'archived')
   .sort((a, b) => {
     const ao = a.data.order ?? 999;
@@ -14,77 +13,158 @@ const selected = all
     if (ao !== bo) return ao - bo;
     return b.data.year - a.data.year;
   })
-  .slice(0, 3);
+  .slice(0, 4);
+
+const posts = (await getCollection('writing', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+const featuredPost = posts[0];
+const featuredStats = featuredPost ? readingStats(featuredPost.body ?? '') : { minutes: 7, words: 1400 };
+
+function fmtDate(d: Date) {
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
 
 const nowMonth = '2026.05';
 ---
 <BaseLayout current="about">
-  <div class="grid grid-cols-12 gap-14 mt-16 grid-main">
-    <aside class="col-span-4">
-      <IdentityCard />
-    </aside>
+  <div class="space-y-16">
+    <!-- Hero Section -->
+    <section class="pt-4">
+      <div class="flex items-center gap-2 font-mono text-[12px] uppercase tracking-wider text-muted mb-4">
+        <span class="text-accent">●</span>
+        <span>Solution Architect &amp; Engineering Lead &middot; Christchurch, NZ</span>
+      </div>
 
-    <section class="col-span-8">
-      <div class="text-muted uppercase mb-5" style="font-size: 11px; letter-spacing: 0.18em;">~/ about</div>
-
-      <h1 class="font-semibold" style="font-size: 34px; line-height: 1.15; letter-spacing: -0.02em; max-width: 26ch;">
-        I design and ship the load-bearing parts of software systems &mdash; <span class="text-muted">backends, websites, mobile apps, the bits between teams.</span>
+      <h1 class="font-serif text-[38px] sm:text-[44px] leading-[1.18] font-medium tracking-tight text-[var(--text)] max-w-[28ch]">
+        Designing and shipping the load-bearing parts of software systems.
       </h1>
 
-      <div class="mt-10 space-y-5" style="font-size: 15px; line-height: 1.7; color: var(--text-dim); max-width: 74ch;">
-        <p>Fifteen-ish years in. Started with Java and Eclipse and swiftly moved to .NET, drifted into mobile (Swift, Flutter), spent the last few years writing a lot of Go and TypeScript and trying to keep teams pointed in roughly the same direction.</p>
-        <p>Currently leading engineering at AJ Hackett Bungy. These days a lot of my work is AI-shaped: building agents, wiring up MCP servers, figuring out where this stuff actually earns its keep versus where it's just noise. The rest is the usual — architecture, code review, repeat.</p>
-        <p>A small corner of the internet for things I've built, things I'm thinking about, and things I'll probably change my mind on later. It&rsquo;s plain on purpose.</p>
-      </div>
+      <p class="font-serif text-[20px] sm:text-[22px] leading-[1.6] text-dim mt-6 max-w-[36ch]">
+        Backends, mobile apps, and the bits between teams. Fifteen-ish years in, currently leading engineering at AJ Hackett Bungy.
+      </p>
 
-      <div class="mt-14">
-        <div class="text-muted uppercase mb-4" style="font-size: 11px; letter-spacing: 0.18em;">
-          ~/ now <span class="text-muted ml-2 tnum">— {nowMonth}</span>
-        </div>
-        <ul style="font-size: 14px; line-height: 1.7; color: var(--text-dim);">
-          <li class="flex gap-4"><span class="text-muted">→</span><span>Debugging BLE issues.</span></li>
-          <li class="flex gap-4"><span class="text-muted">→</span><span>Reading book three of the <em>Red Rising</em> series.</span></li>
-          <li class="flex gap-4"><span class="text-muted">→</span><span>Deep in AI &mdash; testing harnesses and models, writing agents.</span></li>
-          <li class="flex gap-4"><span class="text-muted">→</span><span>Building <a href="https://github.com/MRL-00/Sprocket" class="lk-u">Sprocket</a> on the side.</span></li>
-        </ul>
-      </div>
-
-      <div class="mt-14">
-        <div class="flex items-baseline justify-between mb-4">
-          <div class="text-muted uppercase" style="font-size: 11px; letter-spacing: 0.18em;">~/ selected work</div>
-          <a href="/projects" class="lk touch-link" style="font-size: 12px;">view all →</a>
-        </div>
-        <div>
-          {selected.map((p, i) => (
-            <div class="proj-row" style="grid-template-columns: 28px 1fr 140px;">
-              <span class="idx tnum">{String(i + 1).padStart(2, '0')}</span>
-              <div>
-                <h3>
-                  {p.data.url
-                    ? <a href={p.data.url} class="lk">{p.data.title}</a>
-                    : <span>{p.data.title}</span>}
-                  {p.data.status === 'active' && <span class="text-accent ml-2" style="font-size: 12px;">{statusGlyph(p.data.status)}</span>}
-                </h3>
-                <p class="blurb">{p.data.blurb}</p>
-              </div>
-              <span class="meta tnum">{p.data.tech[0]} · {p.data.year}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div id="contact" class="mt-14">
-        <div class="text-muted uppercase mb-4" style="font-size: 11px; letter-spacing: 0.18em;">~/ contact</div>
-        <p style="font-size: 14px; line-height: 1.7; color: var(--text-dim); max-width: 74ch;">
-          DMs open on <a href="https://x.com/codermatt" class="lk-u">x / @codermatt</a>, or reach out on
-          <a href="https://www.linkedin.com/in/mrlist/" class="lk-u">linkedin / in/mrlist</a>.
+      <div class="mt-8 font-serif text-[17px] sm:text-[18px] leading-[1.75] text-dim space-y-4 max-w-[72ch]">
+        <p>
+          Started with Java and Eclipse and swiftly moved to .NET, drifted into mobile (Swift, Flutter), spent the last few years writing a lot of Go and TypeScript and trying to keep teams pointed in roughly the same direction.
+        </p>
+        <p>
+          These days a lot of my work is AI-shaped: building agents, wiring up MCP servers, figuring out where this stuff actually earns its keep versus where it's just noise. The rest is the usual &mdash; architecture, code review, repeat.
         </p>
       </div>
+    </section>
 
-      <div class="page-spec mt-20 tnum">
-        <span>{site.url.replace('https://', '')}</span>
-        <span>{site.version}</span>
-        <span class="ml-auto">— last deploy {site.lastDeploy}</span>
+    <!-- Now Section -->
+    <section class="border-t bd pt-10">
+      <div class="flex items-baseline justify-between mb-5">
+        <span class="font-sans text-[12px] uppercase font-semibold tracking-wider text-muted">Current Focus</span>
+        <span class="font-mono text-[12px] text-muted">{nowMonth}</span>
+      </div>
+      <ul class="font-serif text-[16px] sm:text-[17px] leading-[1.75] text-dim space-y-2.5">
+        <li class="flex items-start gap-3">
+          <span class="text-accent font-sans mt-0.5">&rarr;</span>
+          <span>Debugging BLE communication and edge-device hardware telemetry.</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="text-accent font-sans mt-0.5">&rarr;</span>
+          <span>Deep in AI systems &mdash; building agents, evaluation harnesses, and MCP servers.</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="text-accent font-sans mt-0.5">&rarr;</span>
+          <span>Building <a href="https://github.com/MRL-00/Sprocket" class="lk-u">Sprocket</a> (macOS GitHub Actions monitor) and <a href="https://github.com/MRL-00/Dex" class="lk-u">Dex</a> on the side.</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="text-accent font-sans mt-0.5">&rarr;</span>
+          <span>Reading book three of the <em>Red Rising</em> series.</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Featured Writing -->
+    {featuredPost && (
+      <section class="border-t bd pt-10">
+        <div class="flex items-baseline justify-between mb-6">
+          <span class="font-sans text-[12px] uppercase font-semibold tracking-wider text-muted">Featured Essay</span>
+          <a href="/writing" class="font-sans text-[13px] text-dim hover:text-accent transition-colors">view all essays &rarr;</a>
+        </div>
+
+        <a href={`/writing/${featuredPost.id}`} class="group block p-7 sm:p-8 bg-card border bd rounded-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--accent)] shadow-sm">
+          <div class="flex items-center gap-2.5 font-mono text-[12px] text-muted mb-3">
+            <span>{fmtDate(featuredPost.data.date)}</span>
+            <span>&middot;</span>
+            <span>{featuredStats.minutes} min read</span>
+            {featuredPost.data.location && (
+              <>
+                <span>&middot;</span>
+                <span>{featuredPost.data.location}</span>
+              </>
+            )}
+          </div>
+          <h2 class="font-serif text-[26px] sm:text-[28px] font-medium leading-[1.25] text-[var(--text)] group-hover:text-accent transition-colors mb-3.5">
+            {featuredPost.data.title}
+          </h2>
+          <p class="font-serif text-[16px] sm:text-[17px] leading-[1.7] text-dim mb-4 max-w-[70ch]">
+            {featuredPost.data.excerpt}
+          </p>
+          <span class="inline-flex items-center gap-1.5 font-sans text-[13px] font-medium text-accent">
+            Read essay &rarr;
+          </span>
+        </a>
+      </section>
+    )}
+
+    <!-- Selected Projects -->
+    <section class="border-t bd pt-10">
+      <div class="flex items-baseline justify-between mb-6">
+        <span class="font-sans text-[12px] uppercase font-semibold tracking-wider text-muted">Selected Systems &amp; Projects</span>
+        <a href="/projects" class="font-sans text-[13px] text-dim hover:text-accent transition-colors">view all &rarr;</a>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        {selectedProjects.map(p => (
+          <a
+            href={p.data.url ?? '#'}
+            class="group p-6 bg-card border bd rounded-xl flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--accent)] shadow-sm"
+          >
+            <div>
+              <div class="flex items-baseline justify-between gap-2 mb-2">
+                <h3 class="font-sans font-semibold text-[16px] text-[var(--text)] group-hover:text-accent transition-colors flex items-center gap-2">
+                  <span>{p.data.title}</span>
+                  {p.data.status === 'active' && <span class="text-accent text-[11px]">{statusGlyph(p.data.status)}</span>}
+                </h3>
+                <span class="font-mono text-[12px] text-muted">{p.data.year}</span>
+              </div>
+              <p class="font-serif text-[15px] leading-[1.6] text-dim mb-4">
+                {p.data.blurb}
+              </p>
+            </div>
+            <div class="flex flex-wrap gap-2 pt-2 border-t border-[var(--hairline)]">
+              {p.data.tech.slice(0, 3).map(t => (
+                <span class="tag">{t}</span>
+              ))}
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <!-- Contact & Footer -->
+    <section id="contact" class="border-t bd pt-10">
+      <div class="font-sans text-[12px] uppercase font-semibold tracking-wider text-muted mb-4">Contact &amp; Connect</div>
+      <p class="font-serif text-[16px] sm:text-[17px] leading-[1.7] text-dim max-w-[70ch]">
+        If you'd like to talk systems, architecture, or agentic AI, DMs are open on
+        <a href="https://x.com/codermatt" class="lk-u">X (@codermatt)</a>, or connect via
+        <a href="https://www.linkedin.com/in/mrlist/" class="lk-u">LinkedIn</a>.
+      </p>
+
+      <div class="mt-14 pt-6 border-t border-[var(--hairline)] flex flex-wrap justify-between items-center text-[13px] font-sans text-muted gap-4">
+        <div>Matt List &middot; Ōtautahi Christchurch, New Zealand</div>
+        <div class="flex items-center gap-5">
+          <a href="https://github.com/MRL-00" class="hover:text-accent transition-colors">GitHub</a>
+          <a href="https://x.com/codermatt" class="hover:text-accent transition-colors">X</a>
+          <a href="https://www.linkedin.com/in/mrlist/" class="hover:text-accent transition-colors">LinkedIn</a>
+          <a href="/feed.xml" class="hover:text-accent transition-colors">RSS</a>
+        </div>
       </div>
     </section>
   </div>

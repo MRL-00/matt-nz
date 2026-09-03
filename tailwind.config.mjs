@@ -5,7 +5,8 @@ export default {
     extend: {
       fontFamily: {
         mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['"Geist Variable"', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        serif: ['Newsreader', 'Charter', 'Georgia', 'serif'],
       },
       maxWidth: {
         page: '1280px',

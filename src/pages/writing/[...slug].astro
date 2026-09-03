@@ -28,25 +28,13 @@ const { Content, headings } = await render(post);
 const stats = readingStats(post.body ?? '');
 
 const d = post.data.date;
-const yyyy = d.getFullYear();
-const mm = String(d.getMonth() + 1).padStart(2, '0');
-const dd = String(d.getDate()).padStart(2, '0');
-const dateStr = `${yyyy}-${mm}-${dd}`;
+const dateStr = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
 const editedStr = post.data.edited
-  ? (() => {
-      const e = post.data.edited;
-      return `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, '0')}-${String(e.getDate()).padStart(2, '0')}`;
-    })()
+  ? post.data.edited.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
   : null;
 
-// Only collect h2s for the TOC (mockup shows section-level only).
 const toc = headings.filter(h => h.depth === 2);
-
-function fmt(p: CollectionEntry<'writing'>) {
-  const dt = p.data.date;
-  return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
-}
 ---
 <BaseLayout
   title={post.data.title}
@@ -58,108 +46,124 @@ function fmt(p: CollectionEntry<'writing'>) {
     tags: post.data.tags,
   }}
 >
-  <div class="grid grid-cols-12 gap-14 mt-16 grid-main">
-    <aside class="col-span-4">
-      <div class="id-card">
-        <a href="/writing" class="lk" style="font-size: 13px;">← back to writing</a>
-        <div class="text-muted tnum mt-2" style="font-size: 12px;">writing / {yyyy} / {mm}</div>
+  <article class="max-w-[720px] mx-auto pt-4">
+    <!-- Top Back Link -->
+    <div class="mb-10">
+      <a href="/writing" class="font-sans text-[13px] text-dim hover:text-accent inline-flex items-center gap-1.5 transition-colors">
+        &larr; Back to writing
+      </a>
+    </div>
 
-        <div class="text-muted uppercase mb-4 mt-8" style="font-size: 11px; letter-spacing: 0.18em;">~/ post</div>
-        <div class="row"><span class="k">date</span><span class="v tnum">{dateStr}</span></div>
-        <div class="row"><span class="k">read</span><span class="v tnum">{stats.minutes} min · {formatWords(stats.words)} words</span></div>
-        {editedStr && <div class="row"><span class="k">edited</span><span class="v tnum">{editedStr}</span></div>}
-        <div class="row"><span class="k">tags</span><span class="v">{post.data.tags.map(t => <span class="tag mr-2">{t}</span>)}</span></div>
-        {post.data.location && <div class="row"><span class="k">from</span><span class="v">{post.data.location}</span></div>}
-
-        {toc.length > 0 && (
-          <>
-            <div class="text-muted uppercase mb-3 mt-8" style="font-size: 11px; letter-spacing: 0.18em;">~/ contents</div>
-            <ol id="toc" class="tnum" style="font-size: 13px; line-height: 1.85; list-style: none; padding: 0;">
-              {toc.map((h, i) => (
-                <li>
-                  <a href={`#${h.slug}`} class="lk toc-link text-dim" data-target={h.slug}>
-                    <span class="text-muted">{String(i + 1).padStart(2, '0')}</span>&nbsp; {h.text}
-                  </a>
-                </li>
-              ))}
-            </ol>
-          </>
-        )}
-
-        <div class="text-muted uppercase mb-3 mt-8" style="font-size: 11px; letter-spacing: 0.18em;">~/ share</div>
-        <div style="font-size: 13px; line-height: 1.85;">
-          <button id="copy-link" class="lk-u" style="background:none;border:none;padding:0;cursor:pointer;font:inherit;color:inherit;">copy link</button><br/>
-          <a class="lk-u" href={`https://x.com/intent/tweet?text=${encodeURIComponent(post.data.title)}&url=${encodeURIComponent(new URL(`/writing/${post.id}`, site.url).toString())}`}>x / @codermatt →</a><br/>
-          <a class="lk-u" href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(new URL(`/writing/${post.id}`, site.url).toString())}`}>linkedin →</a>
-        </div>
-      </div>
-    </aside>
-
-    <article class="col-span-8">
-      <div class="text-muted uppercase mb-3" style="font-size: 11px; letter-spacing: 0.18em;">~/ writing / {yyyy}</div>
-
-      <h1 class="font-semibold" style="font-size: 30px; line-height: 1.2; letter-spacing: -0.02em; max-width: 32ch;">
-        {post.data.title}
-      </h1>
-
-      <div class="mt-3 tnum text-muted" style="font-size: 12px;">
+    <!-- Article Header -->
+    <header class="mb-12">
+      <div class="flex items-center gap-2.5 font-mono text-[12.5px] text-muted mb-4 flex-wrap">
         <span>{dateStr}</span>
-        <span class="mx-2">·</span>
-        <span>{stats.minutes} min</span>
-        <span class="mx-2">·</span>
+        <span>&middot;</span>
+        <span>{stats.minutes} min read</span>
+        <span>&middot;</span>
         <span>{formatWords(stats.words)} words</span>
         {post.data.location && (
           <>
-            <span class="mx-2">·</span>
+            <span>&middot;</span>
             <span>{post.data.location}</span>
+          </>
+        )}
+        {editedStr && (
+          <>
+            <span>&middot;</span>
+            <span>Updated {editedStr}</span>
           </>
         )}
       </div>
 
-      <div class="ascii-rule mt-3">────────────────────────────────────────────────────────────────────</div>
+      <h1 class="font-serif text-[36px] sm:text-[44px] leading-[1.18] font-medium tracking-tight text-[var(--text)] mb-6">
+        {post.data.title}
+      </h1>
 
-      <div class="prose-body mt-6">
-        <Content />
-      </div>
-
-      <div class="ascii-rule mt-12">────────────────────────────────────────────────────────────────────</div>
-
-      <p class="mt-6" style="font-size: 14px; color: var(--text-dim); max-width: 70ch; line-height: 1.65;">
-        If you&rsquo;ve got opinions about this &mdash; agreement, disagreement, war stories &mdash; I read every reply on
-        <a href="https://x.com/codermatt" class="lk-u">x / @codermatt</a>.
+      <p class="font-serif text-[19px] sm:text-[21px] leading-[1.6] text-dim border-l-2 border-[var(--accent)] pl-5 italic">
+        {post.data.excerpt}
       </p>
 
-      <nav class="grid grid-cols-2 gap-8 mt-12 pt-8" style="border-top: 1px solid var(--hairline);">
+      <div class="flex items-center gap-2 mt-6 flex-wrap">
+        {post.data.tags.map(t => (
+          <span class="tag">{t}</span>
+        ))}
+      </div>
+    </header>
+
+    <!-- Table of Contents (if essay has sections) -->
+    {toc.length > 0 && (
+      <nav class="mb-12 p-6 bg-card border bd rounded-xl font-sans">
+        <div class="text-[12px] uppercase font-semibold tracking-wider text-muted mb-3">Sections in this essay</div>
+        <ol class="space-y-2 text-[14px]">
+          {toc.map((h, i) => (
+            <li>
+              <a href={`#${h.slug}`} class="text-dim hover:text-accent transition-colors flex items-baseline gap-2">
+                <span class="font-mono text-muted text-[11px]">{String(i + 1).padStart(2, '0')}.</span>
+                <span>{h.text}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    )}
+
+    <!-- Essay Body -->
+    <div class="prose-body">
+      <Content />
+    </div>
+
+    <!-- Article Footer / Share -->
+    <div class="mt-16 pt-8 border-t bd space-y-8 font-sans">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="text-[14px] text-dim font-serif">
+          Thoughts or counterarguments? DMs and replies welcome on
+          <a href="https://x.com/codermatt" class="lk-u font-sans font-medium">X (@codermatt)</a>.
+        </div>
+        <div class="flex items-center gap-4 text-[13px]">
+          <button id="copy-link" class="text-dim hover:text-accent transition-colors cursor-pointer bg-transparent border-none p-0">
+            Copy link
+          </button>
+          <span class="text-muted">&middot;</span>
+          <a
+            class="text-dim hover:text-accent transition-colors"
+            href={`https://x.com/intent/tweet?text=${encodeURIComponent(post.data.title)}&url=${encodeURIComponent(new URL(`/writing/${post.id}`, site.url).toString())}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Share on X
+          </a>
+        </div>
+      </div>
+
+      <!-- Previous / Next post nav -->
+      <nav class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6 border-t border-[var(--hairline)]">
         <div>
           {prev ? (
-            <a href={`/writing/${prev.id}`} class="lk block">
-              <span class="text-muted" style="font-size: 12px;">← previous</span>
-              <span class="block mt-1" style="color: var(--text); font-size: 14px; font-weight: 600;">{prev.data.title}</span>
-              <span class="text-muted tnum block mt-1" style="font-size: 12px;">{fmt(prev)}</span>
+            <a href={`/writing/${prev.id}`} class="group block p-4 bg-card border bd rounded-lg hover:border-[var(--accent)] transition-all">
+              <span class="text-muted text-[11px] uppercase font-mono">&larr; Previous</span>
+              <span class="block mt-1 font-serif text-[15px] font-medium text-[var(--text)] group-hover:text-accent transition-colors">
+                {prev.data.title}
+              </span>
             </a>
-          ) : <span class="text-muted" style="font-size: 12px;">← previous</span>}
+          ) : null}
         </div>
-        <div class="text-right">
+        <div>
           {next ? (
-            <a href={`/writing/${next.id}`} class="lk block">
-              <span class="text-muted" style="font-size: 12px;">next →</span>
-              <span class="block mt-1" style="color: var(--text); font-size: 14px; font-weight: 600;">{next.data.title}</span>
-              <span class="text-muted tnum block mt-1" style="font-size: 12px;">{fmt(next)}</span>
+            <a href={`/writing/${next.id}`} class="group block p-4 bg-card border bd rounded-lg hover:border-[var(--accent)] text-right transition-all">
+              <span class="text-muted text-[11px] uppercase font-mono">Next &rarr;</span>
+              <span class="block mt-1 font-serif text-[15px] font-medium text-[var(--text)] group-hover:text-accent transition-colors">
+                {next.data.title}
+              </span>
             </a>
-          ) : <span class="text-muted" style="font-size: 12px;">next →</span>}
+          ) : null}
         </div>
       </nav>
-
-      <div class="page-spec mt-16 tnum">
-        <span>{site.url.replace('https://', '')} / writing / {post.id}</span>
-        <span>{stats.minutes} min · {formatWords(stats.words)} words</span>
-      </div>
-    </article>
-  </div>
+    </div>
+  </article>
 
   <script is:inline>
     (function () {
-      // copy link
       var btn = document.getElementById('copy-link');
       if (btn) {
         btn.addEventListener('click', function () {
@@ -167,45 +171,12 @@ function fmt(p: CollectionEntry<'writing'>) {
           if (navigator.clipboard) {
             navigator.clipboard.writeText(url).then(function () {
               var orig = btn.textContent;
-              btn.textContent = 'copied ✓';
-              setTimeout(function () { btn.textContent = orig; }, 1400);
+              btn.textContent = 'Link copied ✓';
+              setTimeout(function () { btn.textContent = orig; }, 1600);
             });
           }
         });
       }
-
-      // scroll-spy on H2s
-      var links = Array.prototype.slice.call(document.querySelectorAll('.toc-link'));
-      if (!links.length || !('IntersectionObserver' in window)) return;
-
-      var idToLink = {};
-      links.forEach(function (a) {
-        var t = a.getAttribute('data-target');
-        if (t) idToLink[t] = a;
-      });
-
-      var headings = links
-        .map(function (a) { return document.getElementById(a.getAttribute('data-target')); })
-        .filter(Boolean);
-
-      function setActive(id) {
-        links.forEach(function (a) {
-          var active = a.getAttribute('data-target') === id;
-          a.classList.toggle('text-dim', !active);
-          a.style.color = active ? 'var(--text)' : '';
-        });
-      }
-
-      var visible = new Set();
-      var io = new IntersectionObserver(function (entries) {
-        entries.forEach(function (e) {
-          if (e.isIntersecting) visible.add(e.target.id);
-          else visible.delete(e.target.id);
-        });
-        var first = headings.find(function (h) { return visible.has(h.id); });
-        if (first) setActive(first.id);
-      }, { rootMargin: '0px 0px -70% 0px', threshold: 0.1 });
-      headings.forEach(function (h) { io.observe(h); });
     })();
   </script>
 </BaseLayout>

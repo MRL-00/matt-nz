@@ -92,12 +92,12 @@ const ogUrl = new URL(ogImage, site.url).toString();
   </script>
 </head>
 <body>
-  <div class="mx-auto max-w-page px-page" style="padding-left: 64px; padding-right: 64px; padding-top: 56px; padding-bottom: 56px;">
-    <nav class="navbar bd-h" style="border-bottom: 1px solid var(--hairline); padding-bottom: 18px;">
-      <a href="/" class="lk" style="color: var(--text); font-weight: 600; font-size: 14px;">
-        {site.shortTitle} <span class="text-muted" style="font-weight: 400;">/ {site.initials}</span>
+  <div class="mx-auto max-w-[860px] px-6 sm:px-8 py-12 sm:py-16">
+    <nav class="navbar pb-6 mb-12 border-b bd" style="border-bottom-width: 1px;">
+      <a href="/" class="lk" style="color: var(--text); font-weight: 600; font-size: 15px; letter-spacing: -0.01em;">
+        {site.shortTitle}
       </a>
-      <div class="nav-links flex items-center gap-7">
+      <div class="nav-links flex items-center gap-6 text-[14px]">
         {navItems.map(item => (
           <a href={item.href} class={current === item.key ? 'current' : 'lk'}>{item.label}</a>
         ))}
@@ -105,17 +105,16 @@ const ogUrl = new URL(ogImage, site.url).toString();
         <button
           id="theme-toggle"
           type="button"
-          class="lk"
+          class="lk flex items-center justify-center ml-2"
           aria-label="Toggle colour theme"
           title="Toggle colour theme (t)"
-          style="font-size: 12px; background: transparent; border: 1px solid var(--border); padding: 2px 8px; border-radius: 3px; cursor: pointer;"
+          style="font-size: 12px; background: var(--surface); border: 1px solid var(--border); padding: 4px 10px; border-radius: 9999px; cursor: pointer;"
         >
-          <span data-theme-label-dark>dark</span>
-          <span data-theme-label-light style="display:none;">light</span>
+          <span data-theme-label-dark>Dark</span>
+          <span data-theme-label-light style="display:none;">Light</span>
         </button>
       </div>
     </nav>
-
     <slot />
   </div>
 

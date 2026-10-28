@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+step() { echo "==> $1"; SECONDS=0; }
+done_step() { echo "    done in ${SECONDS}s"; }
+
+step "node $(node -v), npm $(npm -v)"
+node -e 'const [a,b]=process.versions.node.split(".").map(Number); if (a<22||(a===22&&b<12)) { console.error("Astro needs Node >=22.12"); process.exit(1) }'
+done_step
+
+step "Installing npm dependencies"
+if [ -d node_modules ]; then
+  npm install --no-audit --no-fund
+else
+  npm ci --no-audit --no-fund
+fi
+git diff --quiet -- package-lock.json || { echo "package-lock.json changed during install" >&2; exit 1; }
+done_step
+
+step "Syncing Astro content types"
+npx astro sync
+done_step

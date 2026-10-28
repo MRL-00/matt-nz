@@ -307,6 +307,12 @@ body {
   }
   .navbar > a:first-child { gap: .35em; }
   .navbar a { min-width: 44px; }
+  .nav-links a { min-width: 0; position: relative; }
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    inset: 0 -6px;
+  }
   .navbar a.current::before {
     content: '●';
     margin-right: 4px;

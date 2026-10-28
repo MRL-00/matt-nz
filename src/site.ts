@@ -43,6 +43,7 @@ export const navItems = [
   { href: '/',         label: 'about',    key: 'about' },
   { href: '/projects', label: 'projects', key: 'projects' },
   { href: '/writing',  label: 'writing',  key: 'writing' },
+  { href: '/matt-list-cv.pdf', label: 'cv', key: 'cv' },
   { href: '/#contact', label: 'contact',  key: 'contact' },
 ];
 
